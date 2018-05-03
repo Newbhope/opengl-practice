@@ -8,6 +8,7 @@
 // Standard Headers
 #include <cstdio>
 #include <cstdlib>
+#include <chrono>
 
 int main() {
 
@@ -39,15 +40,40 @@ int main() {
     // Create a Vertex Buffer Object and copy the vertex data to it
     GLuint vbo;
     glGenBuffers(1, &vbo);
+	/*
+	float vertices[] = {
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+		0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
 
-    GLfloat vertices[] = {
-         0.0f,  0.5f,
-         0.5f, -0.5f,
-        -0.5f, -0.5f
-    };
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, // Bottom-left
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f  // Top-left
+	};
+	*/
+
+	float vertices[] = {
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+		0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
+	};
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	//Element buffer object (uses vertex buffer somehow?)
+
+	GLuint elements[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+	GLuint ebo;
+	glGenBuffers(1, &ebo);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		sizeof(elements), elements, GL_STATIC_DRAW);
 
 	//Somehow read an external shader file I guess
 	//Or just deal with ugly shader string constants
@@ -71,9 +97,29 @@ int main() {
     glUseProgram(shaderProgram);
 
     // Specify the layout of the vertex data
+	/*
     GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
     glEnableVertexAttribArray(posAttrib);
     glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+	*/
+
+	GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
+
+	auto t_start = std::chrono::high_resolution_clock::now();
+
+	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
+		5 * sizeof(float), 0);
+
+	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+	glEnableVertexAttribArray(colAttrib);
+	glVertexAttribPointer(colAttrib,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		5 * sizeof(float),
+		(void*)(2 * sizeof(float)));
 
     // Rendering Loop
     while (glfwWindowShouldClose(mWindow) == false) {
@@ -85,14 +131,20 @@ int main() {
         glClearColor(0.f, 0.f, 0.f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//For drawing vertex point arrays
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//For drawing element buffers
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Flip Buffers and Draw
         glfwSwapBuffers(mWindow);
         glfwPollEvents();
 
-		GLint uniColor = glGetUniformLocation(shaderProgram, "triangleColor");
-		glUniform3f(uniColor, 1.0f, 0.0f, 0.0f);
+		auto t_now = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+
+		glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
     }   
 	
 	glfwTerminate();
