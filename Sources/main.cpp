@@ -47,7 +47,7 @@ int main() {
 		GLuint vbo;
 		glGenBuffers(1, &vbo);
 
-		float points[] = {
+		GLfloat points[] = {
 			-0.45f,  0.45f,
 			0.45f,  0.45f,
 			0.45f, -0.45f,
@@ -65,7 +65,7 @@ int main() {
 		// Specify layout of point data
 		GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
 		glEnableVertexAttribArray(posAttrib);
-		glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), 0);
+		glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
 
 		while (glfwWindowShouldClose(mWindow) == false) {
@@ -76,9 +76,9 @@ int main() {
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT);
 
-			//glDrawArrays(GL_POINTS, 0, 4);
+			glDrawArrays(GL_POINTS, 0, 4);
 
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+			//glDrawArrays(GL_TRIANGLES, 0, 6);
 
 			// Flip Buffers and Draw
 			glfwSwapBuffers(mWindow);
