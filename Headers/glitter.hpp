@@ -63,20 +63,16 @@ const char* geoVertex = R"glsl(
 #version 150 core
 
 in vec2 pos;
+in vec3 color;
+in float sides;
+
+out vec3 vColor; //Output to geometry or fragment shader
+out float vSides;
 
 void main() {
 	gl_Position = vec4(pos, 0.0, 1.0);
-}
-
-)glsl";
-
-const char* geoFrag = R"glsl(
-#version 150 core
-
-out vec4 outColor;
-
-void main() {
-	outColor = vec4(1.0, 0.0, 0.0, 1.0);
+	vColor = color;
+	vSides = sides;
 }
 
 )glsl";
@@ -85,42 +81,43 @@ const char* geoShader = R"glsl(
 #version 150 core
 
 layout(points) in;
-layout(line_strip, max_vertices = 2) out;
+layout(line_strip, max_vertices = 69) out;
+
+in vec3 vColor[]; //Output from vertex shader for each vertex
+in float vSides[];
+
+out vec3 fColor; //Output to fragment shader
+
+const float PI = 3.1415926;
 
 void main() {
-	gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0);
-	EmitVertex();
+	fColor = vColor[0];
+    for (int i = 0; i <= vSides[0]; i++) {
+        //Angle between each side in radians
+        float ang = PI * 2.0 / vSides[0] * i;
 
-	gl_Position = gl_in[0].gl_Position + vec4(0.1, 0.0, 0.0, 0.0);
-	EmitVertex();
+        //Offset from center of point (magic number to adjust for aspect ratio)
+        vec4 offset = vec4(cos(ang) * 0.225, -sin(ang) * 0.4, 0.0, 0.0);
+        gl_Position = gl_in[0].gl_Position + offset;
 
-	EndPrimitive();
+        EmitVertex();
+    }
+    EndPrimitive();
 }
 
 )glsl";
 
-// Vertex shader
-const GLchar* vertexShaderSrc = R"glsl(
-    #version 150 core
+const char* geoFrag = R"glsl(
+#version 150 core
 
-    in vec2 pos;
+in vec3 fColor;
 
-    void main()
-    {
-        gl_Position = vec4(pos, 0.0, 1.0);
-    }
+out vec4 outColor;
 
-)glsl";
+void main() {
+	outColor = vec4(fColor, 1.0);
+}
 
-// Fragment shader
-const GLchar* fragmentShaderSrc = R"glsl(
-    #version 150 core
-
-    out vec4 outColor;
-    void main()
-    {
-        outColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
 )glsl";
 
 //methods

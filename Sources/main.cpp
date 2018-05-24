@@ -47,11 +47,12 @@ int main() {
 		GLuint vbo;
 		glGenBuffers(1, &vbo);
 
-		GLfloat points[] = {
-			-0.45f,  0.45f,
-			0.45f,  0.45f,
-			0.45f, -0.45f,
-			-0.45f, -0.45f,
+		float points[] = {
+			//Coordinates  Color             Sides
+			-0.45f,  0.45f, 1.0f, 0.0f, 0.0f,  4.0f,
+			0.45f,  0.45f, 0.0f, 1.0f, 0.0f,  8.0f,
+			0.45f, -0.45f, 0.0f, 0.0f, 1.0f, 16.0f,
+			-0.45f, -0.45f, 1.0f, 1.0f, 0.0f, 32.0f
 		};
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -65,8 +66,18 @@ int main() {
 		// Specify layout of point data
 		GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
 		glEnableVertexAttribArray(posAttrib);
-		glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
+			6 * sizeof(float), 0);
 
+		GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+		glEnableVertexAttribArray(colAttrib);
+		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
+			6 * sizeof(float), (void*)(2 * sizeof(float)));
+
+		GLint sidesAttrib = glGetAttribLocation(shaderProgram, "sides");
+		glEnableVertexAttribArray(sidesAttrib);
+		glVertexAttribPointer(sidesAttrib, 1, GL_FLOAT, GL_FALSE, 
+			6 * sizeof(float), (void*)(5 * sizeof(float)));
 
 		while (glfwWindowShouldClose(mWindow) == false) {
 			if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
