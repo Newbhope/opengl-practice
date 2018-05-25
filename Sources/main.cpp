@@ -12,25 +12,25 @@
 
 int main() {
 
-    // Load GLFW and Create a Window
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    auto mWindow = glfwCreateWindow(mWidth, mHeight, "OpenGL", nullptr, nullptr);
+	// Load GLFW and Create a Window
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	auto mWindow = glfwCreateWindow(mWidth, mHeight, "OpenGL", nullptr, nullptr);
 
-    // Check for Valid Context
-    if (mWindow == nullptr) {
-        fprintf(stderr, "Failed to Create OpenGL Context");
-        return EXIT_FAILURE;
-    }
+	// Check for Valid Context
+	if (mWindow == nullptr) {
+		fprintf(stderr, "Failed to Create OpenGL Context");
+		return EXIT_FAILURE;
+	}
 
-    // Create Context and Load OpenGL Functions
-    glfwMakeContextCurrent(mWindow);
-    gladLoadGL();
-    fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
+	// Create Context and Load OpenGL Functions
+	glfwMakeContextCurrent(mWindow);
+	gladLoadGL();
+	fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
 
 	if (MODE == "geometry") {
 		GLuint vertexShader = createShader(GL_VERTEX_SHADER, geoVertex);
@@ -76,7 +76,7 @@ int main() {
 
 		GLint sidesAttrib = glGetAttribLocation(shaderProgram, "sides");
 		glEnableVertexAttribArray(sidesAttrib);
-		glVertexAttribPointer(sidesAttrib, 1, GL_FLOAT, GL_FALSE, 
+		glVertexAttribPointer(sidesAttrib, 1, GL_FLOAT, GL_FALSE,
 			6 * sizeof(float), (void*)(5 * sizeof(float)));
 
 		while (glfwWindowShouldClose(mWindow) == false) {
@@ -89,18 +89,71 @@ int main() {
 
 			glDrawArrays(GL_POINTS, 0, 4);
 
-			//glDrawArrays(GL_TRIANGLES, 0, 6);
+			// Flip Buffers and Draw
+			glfwSwapBuffers(mWindow);
+			glfwPollEvents();
+		}
+
+	} else if(MODE == "tree") {
+		GLuint vertexShader = createShader(GL_VERTEX_SHADER, treeVertex);
+		GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, treeFrag);
+		GLuint geometryShader = createShader(GL_GEOMETRY_SHADER, treeGeo);
+
+		GLuint shaderProgram = glCreateProgram();
+		glAttachShader(shaderProgram, vertexShader);
+		glAttachShader(shaderProgram, fragmentShader);
+		glAttachShader(shaderProgram, geometryShader);
+		glLinkProgram(shaderProgram);
+		glUseProgram(shaderProgram);
+
+		GLuint vbo;
+		glGenBuffers(1, &vbo);
+
+		float points[] = {
+			//Coordinates  Color           num branches each level
+			0.f,  -0.5f, 1.0f, 0.0f, 0.0f, 8.0f
+		};
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+
+		// Create VAO
+		GLuint vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
+
+		// Specify layout of point data
+		GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
+		glEnableVertexAttribArray(posAttrib);
+		glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
+			6 * sizeof(float), 0);
+
+		GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
+		glEnableVertexAttribArray(colAttrib);
+		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
+			6 * sizeof(float), (void*)(2 * sizeof(float)));
+
+		GLint branchNumAttrib = glGetAttribLocation(shaderProgram, "branches");
+		glEnableVertexAttribArray(branchNumAttrib);
+		glVertexAttribPointer(branchNumAttrib, 1, GL_FLOAT, GL_FALSE,
+			6 * sizeof(float), (void*)(5 * sizeof(float)));
+
+		while (glfwWindowShouldClose(mWindow) == false) {
+			if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+				glfwSetWindowShouldClose(mWindow, true);
+			}
+
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			glDrawArrays(GL_POINTS, 0, 1);
 
 			// Flip Buffers and Draw
 			glfwSwapBuffers(mWindow);
 			glfwPollEvents();
 		}
 
-		glfwTerminate();
-		return EXIT_SUCCESS;
-	}
-
-	else {
+	} else {
 
 		// Create Vertex Array Object
 		GLuint vao;
@@ -216,11 +269,11 @@ int main() {
 
 			glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 		}
-
-		glfwTerminate();
-
-		return EXIT_SUCCESS;
 	}
+
+	glfwTerminate();
+
+	return EXIT_SUCCESS;
 }
 
 GLuint createShader(GLenum type, const GLchar* src) {

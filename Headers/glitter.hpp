@@ -20,7 +20,7 @@
 //     #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-const std::string MODE = "geometry";
+const std::string MODE = "tree";
 
 const int mWidth = 1280;
 const int mHeight = 720;
@@ -119,6 +119,70 @@ void main() {
 }
 
 )glsl";
+
+const char* treeVertex = R"glsl(
+    #version 150 core
+
+    in vec2 pos;
+    in vec3 color;
+    in float branches;
+
+    out vec3 vColor; //Output to geometry or fragment shader
+    out float vBranches;
+
+    void main() {
+    	gl_Position = vec4(pos, 0.0, 1.0);
+    	vColor = color;
+    	vBranches = branches;
+    }
+
+)glsl";
+
+const char* treeGeo = R"glsl(
+#version 150 core
+
+layout(points) in;
+layout(line_strip, max_vertices = 69) out;
+
+in vec3 vColor[]; //Output from vertex shader for each vertex
+in float vBranches[];
+
+out vec3 fColor; //Output to fragment shader
+
+void main() {
+    fColor = vColor[0];
+    for (int i = 1; i <= vBranches[0] + 1; i++) {
+
+        //left branch
+        vec4 leftOffset = vec4(-0.1 * i, 0.1 * i, 0.0, 0.0);
+        gl_Position = gl_in[0].gl_Position + leftOffset;
+        EmitVertex();
+
+        //right branch
+        vec4 rightOffset = vec4(0.1 * i, 0.1 * i, 0.0, 0.0);
+        gl_Position = gl_in[0].gl_Position + rightOffset;
+        EmitVertex();
+
+    }
+    EndPrimitive();
+}
+
+)glsl";
+
+const char* treeFrag = R"glsl(
+    #version 150 core
+
+    in vec3 fColor;
+
+    out vec4 outColor;
+
+    void main() {
+    	outColor = vec4(fColor, 1.0);
+    }
+
+)glsl";
+
+
 
 //methods
 GLuint createShader(GLenum, const GLchar*);
