@@ -110,8 +110,8 @@ int main() {
 		glGenBuffers(1, &vbo);
 
 		float points[] = {
-			//Coordinates  Color           num branches each level
-			0.f,  -0.5f, 1.0f, 0.0f, 0.0f, 8.0f
+			//Coordinates  Color           num levels| num branches
+			0.f,  -0.5f, 1.0f, 0.0f, 0.0f, 10.0f, 2.0f
 		};
 
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -126,17 +126,22 @@ int main() {
 		GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
 		glEnableVertexAttribArray(posAttrib);
 		glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
-			6 * sizeof(float), 0);
+			7 * sizeof(float), 0);
 
 		GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
 		glEnableVertexAttribArray(colAttrib);
 		glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,
-			6 * sizeof(float), (void*)(2 * sizeof(float)));
+			7 * sizeof(float), (void*)(2 * sizeof(float)));
+
+		GLint levelNumAttrib = glGetAttribLocation(shaderProgram, "levels");
+		glEnableVertexAttribArray(levelNumAttrib);
+		glVertexAttribPointer(levelNumAttrib, 1, GL_FLOAT, GL_FALSE,
+			7 * sizeof(float), (void*)(5 * sizeof(float)));
 
 		GLint branchNumAttrib = glGetAttribLocation(shaderProgram, "branches");
 		glEnableVertexAttribArray(branchNumAttrib);
 		glVertexAttribPointer(branchNumAttrib, 1, GL_FLOAT, GL_FALSE,
-			6 * sizeof(float), (void*)(5 * sizeof(float)));
+			7 * sizeof(float), (void*)(6 * sizeof(float)));
 
 		while (glfwWindowShouldClose(mWindow) == false) {
 			if (glfwGetKey(mWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
