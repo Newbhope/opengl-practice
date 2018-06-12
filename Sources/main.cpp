@@ -10,6 +10,20 @@
 #include <cstdlib>
 #include <chrono>
 
+/*
+void GLAPIENTRY MessageCallback( GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar* message,
+                const void* userParam ) {
+    fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
+*/
+
 int main() {
 
 	// Load GLFW and Create a Window
@@ -31,6 +45,8 @@ int main() {
 	glfwMakeContextCurrent(mWindow);
 	gladLoadGL();
 	fprintf(stderr, "OpenGL %s\n", glGetString(GL_VERSION));
+    
+    glEnable(GL_DEBUG_OUTPUT);
 
 	if (MODE == "geometry") {
 		GLuint vertexShader = createShader(GL_VERTEX_SHADER, geoVertex);
@@ -275,6 +291,8 @@ int main() {
 			glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, 0.0f, 0.0f);
 		}
 	}
+    
+    //glDebugMessageCallback(MessageCallback, 0);
 
 	glfwTerminate();
 
